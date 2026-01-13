@@ -1,0 +1,121 @@
+\begin{frame}{Etude de l'attaque}
+  \centering
+  \huge \textbf{Quatrième cas :} \\
+  \vspace{1cm}
+  \huge \textit{Accès uniquement à 1 logprob}
+\end{frame}
+
+\begin{frame}{Top-1 logprob avec biais binaire}
+  Contraintes :
+    \begin{itemize}
+       \item Accès uniquement au plus haut logprob
+        \item 2 valeurs possibles pour le biais (eg : 0 et -1)
+    \end{itemize}
+
+  \begin{exampleblock}{Idée}
+      Comparer pour chaque token la valeur du top logprob selon si on ajoute le biais ou non
+  \end{exampleblock}
+  
+  \begin{block}{Résultat}
+      $logprob^{(t)} = (\frac{1}{e} - 1)^{-1}(exp(y_{top} - y_{top}'^{(t)}) - 1)$ avec :
+      \begin{itemize}
+        \item $y_{top}$ : plus haut logprob sans aucun biais
+        \item $y_{top}'^{(t)}$ : plus haut logprob avec un biais de -1 sur le token t
+      \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Etude de l'attaque}
+  \centering
+  \huge \textbf{Cinquième cas :} \\
+  \vspace{1cm}
+  \huge \textit{Accès à aucun logprob}
+\end{frame}
+
+\begin{frame}{Attaque sans logprob}
+ Contraintes :
+    \begin{itemize}
+      \item Accès à aucun logprob
+        \item Possibilité de mettre le biais désiré 
+    \end{itemize}
+
+  \begin{exampleblock}{Idée}
+      Faire une recherche dichotomique pour chaque token pour trouver le biais sur le logit associé avec lequel il devient le plus probable
+  \end{exampleblock}
+
+  \begin{block}{Résultat}
+    Valeur relative des logits à partir du biais calculé. Si on note $\epsilon$ la tolérance admise, N le nombre de tokens
+    et B une majoration de la différence entre 2 logits, on obtient le résultat désiré en $N*log(\frac{B}{\epsilon})$ appels
+  \end{block}
+\end{frame}
+
+\begin{frame}
+\Huge {Résultats et impact}
+\end{frame}
+
+%j'avoue ne pas être sûr de si ça se mettrait pas plutôt dans la méthode
+\begin{frame}{Précision et coût du calcul des logits}
+  \begin{figure}
+    \includegraphics[width= \linewidth]{img/Table4.png}
+  \end{figure}
+  Calcul des logits $\rightarrow$ Attaque possible $\rightarrow$ OpenAI met en place des défenses
+  %bon cette slide est très guez
+\end{frame}
+
+\begin{frame}{Défenses}
+  L'article présente plusieurs défenses possible pour empêcher cette attaque :
+  \begin{block}{Enlever/remplacer la possibilité d'ajouter des biais}
+    \begin{itemize}
+      \item Biais nécessaire pour les attaques
+      \item Remplacer les biais par une liste de blocage
+    \end{itemize}
+  \end{block}
+  \begin{block}{Modifier l'architecture du modèle}
+    \begin{itemize}
+    \item Rajouter une couche intermédiaire
+    \item Changer la dimension de la dernière couche après entraînement
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Défenses}
+  Il présente aussi des moyens de rendre cette attaque plus coûteuse ou difficile à mettre en place :
+  \begin{block}{Restreindre les fonctionnalités}
+    \begin{itemize}
+      \item Donner l'accès aux biais OU (exclusif) aux logprobs
+      \item Limiter le nombre de requêtes biaisées pour un prompt donné
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{Sans restrictions de fonctionnalités}
+    \begin{itemize}
+      \item Ajouter du bruit
+      \item Détecter les requêtes malveillantes
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Travail futur}
+  Il est possible d'étendre le travail présenté :
+  \begin{itemize}
+    \item Étendre cette attaque à plusieurs couches
+    \item Se dispenser du besoin de biais sur les logits
+    \item Utiliser les informations ayant été volées
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+  \item Approche précédente : "all-or-nothing" 
+
+  \item $1^{ere}$ fois qu'une récolte des informations sur un modèle déployé
+
+  \item Des décisions de design semblant inconséquentes peuvent amener à des vulnérabilités
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \Huge{Merci pour votre attention.}
+
+  \Huge{Des questions ?}
+\end{frame}

@@ -1,0 +1,168 @@
+\begin{frame}{Présentation de l'étude}
+  \centering
+  \vfill
+  {\Large\itshape Stealing Part of a Production Language Model}\\[4em]
+  {\Large\itshape Vol d'une partie d'un modèle de langage en production}
+  \vfill
+\end{frame}
+
+\begin{frame}{Sommaire}
+  \begin{itemize}\setlength\itemsep{3em}
+    \item Introduction et Contexte
+    \item Etude de l'attaque réalisée
+    \item Validation et défenses
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Présentation de l'étude}
+  \vspace{-1cm}
+  \begin{itemize}
+    \item Publiée sur l'archive ouverte de prépublications \texttt{arXiv}.
+  \end{itemize}
+  \vspace{20pt}
+  \centering
+  \includesvg[width=0.4\textwidth]{img/arxiv-logo.svg}
+\end{frame}
+
+\begin{frame}{Présentation de l'étude}
+  \vspace{-1cm}
+  \begin{itemize}
+    \item Publiée sur l'archive ouverte de prépublications \texttt{arXiv}.
+    \item Date : 9 juillet 2024 (v2)
+  \end{itemize}
+  \vspace{65.5pt}
+\end{frame}
+
+\begin{frame}{Présentation de l'étude}
+  \vspace{3.7pt}
+  \begin{itemize}
+    \item Publiée sur l'archive ouverte de prépublications \texttt{arXiv}.
+    \item Date : 9 juillet 2024 (v2)
+    \item 14 auteurs issues de 5 institutions
+  \vspace{0.5cm}
+  \begin{center}
+    % Ligne 1
+    \raisebox{0.3cm}{\makebox[0.25\textwidth][c]{\includesvg[width=0.3\textwidth]{img/deep-mind-logo.svg}}}%
+    \hfill
+    \hspace{1.5cm}
+    \raisebox{0.4cm}{\makebox[0.25\textwidth][c]{\includegraphics[width=0.35\textwidth]{img/eth-zurich-logo.png}}}%
+    \hfill
+    \raisebox{0.1cm}{\makebox[0.25\textwidth][c]{\includegraphics[width=0.3\textwidth]{img/mcgill-logo.png}}}
+    \vspace{0.5cm}
+
+    % % Ligne 2
+    \hspace{-0.5cm}%
+    \raisebox{-0.2cm}{\makebox[0.25\textwidth][c]{\includegraphics[width=0.2\textwidth,height=30pt,keepaspectratio]{img/univ-wash-logo.png}}}%
+    \hspace{1cm}%
+    \raisebox{-0.2cm}{\makebox[0.25\textwidth][c]{\includesvg[width=0.2\textwidth,height=40pt,keepaspectratio,inkscapelatex=false]{img/openai-logo.svg}}}  
+  \end{center}
+  \end{itemize}
+
+
+\end{frame}
+
+\begin{frame}{Contexte de l'étude}
+  \vspace{-3pt}
+  \begin{itemize}
+    \item Explosion de l'utilisation des chatbots. 
+  \end{itemize}
+  \vspace{10pt}
+  \centering
+  \includegraphics[width=0.7\textwidth]{img/chatgpt_utilisateurs.jpg}
+\end{frame}
+
+\begin{frame}{Contexte de l'étude}
+  \vspace{-3pt}
+  \begin{itemize}
+    \item Absence de connaissances sur les modèles. 
+  \end{itemize}
+  \begin{alertblock}{Extrait du rapport technique de ChatGPT4 (traduit)}
+    Le rapport technique de ChatGPT4 "ne contient aucun [...] détail sur l'architecture (y compris la taille du modèle) [...]".
+  \end{alertblock}
+\end{frame}
+
+
+
+\begin{frame}{Contexte de l'étude}
+  \vspace{-3pt}
+  \textbf{Des attaques uniquement théoriques :}
+  \begin{itemize}
+    \item Hypothèses d'attaques non vérifiés en pratique
+    \item Modèles attaqués simplistes
+    \item Limitation des outputs en pratique
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Contexte de l'étude}
+  \vspace{-23pt}
+    \textbf{Problématique :} Combien d'informations un adversaire peut-il apprendre sur un modèle de langage en production en effectuant des requêtes à son API ?
+\end{frame}
+
+\begin{frame}{Contexte de l'étude}
+  \vspace{10pt}
+  \textbf{Problématique :} Combien d'informations un adversaire peut-il apprendre sur un modèle de langage en production en effectuant des requêtes à son API ?\\
+  \vspace{20pt}
+  \textbf{Attaque :} \textit{Extraction de la dernière couche d'un modèle de language en production}
+\end{frame}
+
+\begin{frame}{Formalisation}
+  Soient :
+  \begin{itemize}
+    \item $\mathcal{X}$ : Ensemble de vocabulaire de taille $\ell$.
+    \item $f_{\theta} : \mathcal{X}^N \longrightarrow \mathcal{P}(\mathcal{X})$ : modèle global.
+  \end{itemize}
+
+  \begin{block}{Expression du modèle}
+    \[
+      f_{\theta}(p) = \mathrm{softmax}(\mathbf{W} \cdot g_{\theta}(p))
+    \]
+    avec :
+    \begin{itemize}
+      \item $\mathbf{W} \in \mathbb{R}^{\ell \times h}$ : dernière couche
+      \item $g_{\theta} : \mathcal{X}^N \longrightarrow \mathbb{R}^d$ : reste du modèle avant la dernière couche.
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{Définition}
+    \textbf{Logits :} Valeurs brutes produites par le modèle avant application du softmax.\\
+    Pour une entrée $p \in \mathcal{X}^N$, le vecteur de logits associé est $\mathbf{W} \cdot g_{\theta}(p)$
+  \end{block}
+\end{frame}
+
+\begin{frame}{Etude de l'attaque}
+  \centering
+  \huge \textbf{Premier cas :} \\
+  \vspace{1cm}
+  \huge \textit{Tous les logits sont accessibles}
+\end{frame}
+
+
+\begin{frame}{Détermination de h}
+
+Soit $n > h$.\\
+
+On considère \( \mathbf{Q} \in \mathbb{R}^{n \times l} \) tel que
+\[
+\forall i \in \{1, \dots, n\}, \quad \mathbf{Q}_i = \mathbf{W} \cdot g_{\theta}(p_i),
+\]
+où \( p_i \) est un prompt aléatoire.
+
+\begin{block}{Lemme (admis)}
+  \[
+    \operatorname{rank}(\mathbf{Q}) = \operatorname{rank}(\mathbf{W}) = h
+  \]
+\end{block}
+\vfill
+\centering
+\textit{Comment déterminer le rang de Q ?}
+\vfill
+\end{frame}
+
+
+
+
+
+% les valeurs singulières de \( Q \) sont notées \( \lambda_1 \geq \lambda_2 \geq \dots \geq \lambda_n \), et le \textit{compte} est défini par :
+% \[
+% \text{count} \gets \arg \max_i \log \|\lambda_i\| - \log \|\lambda_{i+1}\|.
+% \]
